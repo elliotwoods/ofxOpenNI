@@ -19,6 +19,7 @@ public:
 	xn::DepthGenerator& getXnDepthGenerator();
     
     ofTexture& getTextureReference() { return depth_texture; }
+    bool getIsFrameNew() const {return isFrameNew; }
 	
 private:
 	xn::DepthGenerator depth_generator;
@@ -28,5 +29,8 @@ private:
 	int depth_coloring;
 	float max_depth;
 	float depth_hist[MAX_DEPTH];
+    
+    XnUInt32 lastFrameUpdate;
+    bool isFrameNew;
 };
 

@@ -52,6 +52,7 @@ unsigned char* ofxDepthGenerator::getGrayPixels(){
 ofxDepthGenerator::ofxDepthGenerator(){
 	CreateRainbowPallet();	
 	depth_coloring = 3;
+    isFrameNew = false;
 }
 
 bool ofxDepthGenerator::setup(ofxOpenNIContext* pContext) {
@@ -110,7 +111,8 @@ bool ofxDepthGenerator::setup(ofxOpenNIContext* pContext) {
 	
 }
 void ofxDepthGenerator::draw(float x, float y, float w, float h){
-	generateTexture();
+    generateTexture();
+
 	glColor3f(1,1,1);
 	depth_texture.draw(x, y, w, h);	
 }
@@ -131,7 +133,12 @@ void ofxDepthGenerator::generateTexture(){
 	
 	if (dmd.FrameID() == 0){
 		return;
-	}
+	} 
+    
+    isFrameNew = (lastFrameUpdate != dmd.FrameID());
+    if (!isFrameNew)
+        return;
+    
 	if (dmd.PixelFormat() == XN_PIXEL_FORMAT_RGB24) {
 		printf("its in yuv\n");
 	}
