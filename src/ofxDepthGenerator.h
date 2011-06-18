@@ -17,6 +17,8 @@ public:
 	unsigned char* getGrayPixels();
 	
 	xn::DepthGenerator& getXnDepthGenerator();
+    
+    ofTexture& getTextureReference() { return depth_texture; }
 	
 private:
 	xn::DepthGenerator depth_generator;

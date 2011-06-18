@@ -6,6 +6,8 @@
 //  Copyright 2011 Kimchi and Chips. All rights reserved.
 //
 
+#pragma once
+
 #include "ofxOpenNIContext.h"
 
 class ofxIRGenerator {
@@ -15,14 +17,15 @@ public:
 	
 	bool setup(ofxOpenNIContext* pContext);
     
-	void generateTexture();
+	void update();
 	
-    void update();
 	void draw(float x=0, float y=0, float w=640, float h=480);
 	
 	xn::IRGenerator& getXnIRGenerator();
     
     void setUseTexture(bool b);
+    
+    ofTexture& getTextureReference() { return IR_texture; }
 	
 private:
     void    allocate();
