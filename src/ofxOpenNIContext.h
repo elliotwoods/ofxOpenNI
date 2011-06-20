@@ -35,7 +35,7 @@ public:
 	
 	void addLicense(std::string sVendor, std::string sKey);
 	
-	void enableLogging();
+	void setVerbose(bool b);
 	
 	bool isInitialized();
 	

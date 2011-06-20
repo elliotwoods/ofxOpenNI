@@ -41,15 +41,20 @@ void CreateRainbowPallet() {
 }
 
 unsigned char* ofxDepthGenerator::getPixels() {
-	return depth_pixels;
+	return depth_preview_pixels;
 }
 
 unsigned char* ofxDepthGenerator::getGrayPixels(){
 	return gray_pixels;
 }
 
+const XnDepthPixel* ofxDepthGenerator::getDepthPixels(){
+	return depth_pixels;
+}
 
-ofxDepthGenerator::ofxDepthGenerator(){
+ofxDepthGenerator::ofxDepthGenerator() :
+width(0), height(0)
+{
 	CreateRainbowPallet();	
 	depth_coloring = 3;
     isFrameNew = false;
@@ -102,11 +107,16 @@ bool ofxDepthGenerator::setup(ofxOpenNIContext* pContext) {
 	max_depth = depth_generator.GetDeviceMaxDepth();		
 	
 	depth_texture.allocate(map_mode.nXRes, map_mode.nYRes, GL_RGBA);		
-	depth_pixels = new unsigned char[map_mode.nXRes * map_mode.nYRes * 4];
+	depth_preview_pixels = new unsigned char[map_mode.nXRes * map_mode.nYRes * 4];
+    
 	gray_pixels = new unsigned char[map_mode.nXRes * map_mode.nYRes];
-	memset(depth_pixels, 0, map_mode.nXRes * map_mode.nYRes * 4 * sizeof(unsigned char));
+	memset(depth_preview_pixels, 0, map_mode.nXRes * map_mode.nYRes * 4 * sizeof(unsigned char));
 		
 	depth_generator.StartGenerating();	
+    
+    width = map_mode.nXRes;
+    height = map_mode.nYRes;
+    
 	return true;
 	
 }
@@ -124,7 +134,7 @@ xn::DepthGenerator& ofxDepthGenerator::getXnDepthGenerator() {
 
 void ofxDepthGenerator::generateTexture(){
 	// get meta-data
-	xn::DepthMetaData dmd;
+    xn::DepthMetaData dmd;
 	depth_generator.GetMetaData(dmd);	
 	
 	// get the pixels
@@ -165,11 +175,12 @@ void ofxDepthGenerator::generateTexture(){
 		}
 	}
 	depth = dmd.Data();
+    depth_pixels = depth;
 	
 	for(XnUInt y = 0; y < dmd.YRes(); ++y) {
 		int y_dx = y * dmd.XRes();
 		int x_dx = dmd.XOffset();
-		unsigned char * texture = (unsigned char*)depth_pixels + y_dx * 4 + x_dx *4;
+		unsigned char * texture = (unsigned char*)depth_preview_pixels + y_dx * 4 + x_dx *4;
 		for(XnUInt x = 0; x < dmd.XRes();  x++, depth++, texture+=4) {
 			if(*depth != 0) {
 				int hist_value = depth_hist[*depth];
@@ -182,14 +193,14 @@ void ofxDepthGenerator::generateTexture(){
 		}
 	}
 		
-	depth_texture.loadData((unsigned char *)depth_pixels,dmd.XRes(), dmd.YRes(), GL_RGBA);	
+	depth_texture.loadData((unsigned char *)depth_preview_pixels,dmd.XRes(), dmd.YRes(), GL_RGBA);	
 	return; 
 	//----
 	
 	
 	// copy depth into texture-map
 	for (XnUInt16 y = dmd.YOffset(); y < dmd.YRes() + dmd.YOffset(); y++) {
-		unsigned char * texture = (unsigned char*)depth_pixels + y * dmd.XRes() * 4 + dmd.XOffset()*4;
+		unsigned char * texture = (unsigned char*)depth_preview_pixels + y * dmd.XRes() * 4 + dmd.XOffset()*4;
 		for (XnUInt16 x = 0; x < dmd.XRes(); x++, depth++, texture+=4){
 			XnUInt8 red = 0;
 			XnUInt8 green = 0;
@@ -269,5 +280,27 @@ void ofxDepthGenerator::generateTexture(){
 		}	
 	}
 	
-	depth_texture.loadData((unsigned char *)depth_pixels,dmd.XRes(), dmd.YRes(), GL_RGBA);	
+	depth_texture.loadData((unsigned char *)depth_preview_pixels,dmd.XRes(), dmd.YRes(), GL_RGBA);	
+}
+
+const float fx_d = 1.0f / 5.9421434211923247e+02f;
+const float fy_d = 1.0f / 5.9104053696870778e+02f;
+const float cx_d = 3.3930780975300314e+02f;
+const float cy_d = 2.4273913761751615e+02f;
+
+void ofxDepthGenerator::getWorldXYZ(int i, int j, float* xyz)
+{
+    // get the pixel  
+    float depth = depth_pixels[i + j * width];
+    
+    xyz[2] = depth / 1000.0f;
+    xyz[0] = (float(i) - cx_d) * fx_d * xyz[2];
+    xyz[1] = -(float(j) - cy_d) * fy_d * xyz[2];
+}
+
+ofVec3f ofxDepthGenerator::getWorldXYZ(int i, int j)
+{
+    ofVec3f xyz;
+    getWorldXYZ(i, j, &xyz.x);
+    return xyz;
 }

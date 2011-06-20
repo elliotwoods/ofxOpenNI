@@ -9,8 +9,9 @@
 #pragma once
 
 #include "ofxOpenNIContext.h"
+#include "ofBaseTypes.h"
 
-class ofxIRGenerator {
+class ofxIRGenerator : public ofBaseHasPixels {
 public:
 	ofxIRGenerator(bool useTexture = true);
     ~ofxIRGenerator();
@@ -26,15 +27,17 @@ public:
     void setUseTexture(bool b);
     
     ofTexture& getTextureReference() { return IR_texture; }
+    
+    ofPixels& getPixelsRef() { return IR_pixels_view; }
+    unsigned char * getPixels() { return IR_pixels_view.getPixels(); }
 	
 private:
     void    allocate();
-    void    deAllocate();
     
 	xn::IRGenerator IR_generator;
 	ofTexture IR_texture;
 	UInt16* IR_pixels;
-    unsigned char* IR_pixels_view;
+    ofPixels IR_pixels_view;
     bool bUseTexture;
     
     XnUInt32 lastFrameUpdate;

@@ -162,18 +162,21 @@ void ofxOpenNIContext::addLicense(std::string sVendor, std::string sKey) {
 	 |*/
 }
 
-void ofxOpenNIContext::enableLogging() {
+void ofxOpenNIContext::setVerbose(bool b) {
 
-	XnStatus result = xnLogSetConsoleOutput(true);
-	SHOW_RC(result, "Set console output");
-			
-	result = xnLogSetSeverityFilter(XN_LOG_VERBOSE);
-	SHOW_RC(result, "Set log level");
-	
-	//xnLogInitSystem();
-	//xnLogSetConsoleOutput(bVerbose || bList);
-	//xnLogSetSeverityFilter(bVerbose ? XN_LOG_VERBOSE : XN_LOG_WARNING);
-	xnLogSetMaskState(XN_LOG_MASK_ALL, TRUE);
+    XnStatus result = xnLogSetConsoleOutput(b);
+    SHOW_RC(result, "Set console output");
+            
+    if (b)
+    {
+        result = xnLogSetSeverityFilter(XN_LOG_VERBOSE);
+        SHOW_RC(result, "Set log level");
+    }
+    //xnLogInitSystem();
+    //xnLogSetConsoleOutput(bVerbose || bList);
+    //xnLogSetSeverityFilter(bVerbose ? XN_LOG_VERBOSE : XN_LOG_WARNING);
+    xnLogSetMaskState(XN_LOG_MASK_ALL, b);
+
 
 }
 

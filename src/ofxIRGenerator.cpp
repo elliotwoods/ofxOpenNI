@@ -15,11 +15,7 @@ lastFrameUpdate(0)
 }
 
 ofxIRGenerator::~ofxIRGenerator()
-{
-    //deallocate texture pix
-    if (bUseTexture)
-        deAllocate();
-    
+{    
     delete[] IR_pixels;
 }
 
@@ -40,7 +36,7 @@ void ofxIRGenerator::update(){
         for (int i=0; i<nPixels; i++)
             IR_pixels_view[i] = IR_pixels[i] >> 2; // 10bit->8bit
         
-        IR_texture.loadData(IR_pixels_view,imd.XRes(), imd.YRes(), GL_LUMINANCE8);
+        IR_texture.loadData(getPixels(),imd.XRes(), imd.YRes(), GL_LUMINANCE8);
     }
 }
 
@@ -93,9 +89,7 @@ xn::IRGenerator& ofxIRGenerator::getXnIRGenerator(){
 void ofxIRGenerator::setUseTexture(bool b)
 {
     //check if we need to allocate texture
-    if (bUseTexture)
-        deAllocate();
-    else
+    if (!bUseTexture)
         allocate();
         
     bUseTexture = b;
@@ -107,16 +101,10 @@ void ofxIRGenerator::allocate()
     IR_generator.GetMapOutputMode(map_mode);
     
     //allocate grey pixels
-    IR_pixels_view = new unsigned char[map_mode.nXRes * map_mode.nYRes];
+    IR_pixels_view.allocate(map_mode.nXRes, map_mode.nYRes, OF_PIXELS_MONO);
     
     //allocate texture
     if (!IR_texture.bAllocated())
         IR_texture.allocate(map_mode.nXRes, map_mode.nYRes, GL_LUMINANCE8);
     
-}
-
-void ofxIRGenerator::deAllocate()
-{
-    //deallocate grey pixels
-    delete[] IR_pixels_view;
 }
