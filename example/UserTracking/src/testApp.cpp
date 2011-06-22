@@ -22,6 +22,15 @@ void testApp::draw(){
 	if(tracked != NULL) {
 		tracked->debugDraw();
 	}
+    
+    
+    //draw 3D coords on top
+    cursorWorld = depth.getWorldXYZ(cursorScreen);
+    //
+    stringstream strCoords;
+    strCoords << ofToString(cursorWorld);
+    //
+    ofDrawBitmapString(strCoords.str(), cursorScreen.x, cursorScreen.y);
 }
 
 //--------------------------------------------------------------
@@ -36,12 +45,18 @@ void testApp::keyReleased(int key){
 
 //--------------------------------------------------------------
 void testApp::mouseMoved(int x, int y ){
-
+    
+    cursorScreen.x = x;
+    cursorScreen.y = y;
+    
 }
 
 //--------------------------------------------------------------
 void testApp::mouseDragged(int x, int y, int button){
 
+    cursorScreen.x = x;
+    cursorScreen.y = y;
+    
 }
 
 //--------------------------------------------------------------

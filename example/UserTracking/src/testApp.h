@@ -19,10 +19,13 @@ class testApp : public ofBaseApp{
 		void windowResized(int w, int h);
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
+    
 		//ofxONI oni;
 		ofxOpenNIContext context;
 		ofxDepthGenerator depth;
 		ofxUserGenerator user;
-		
+    
+        ofVec2f cursorScreen;
+        ofVec3f cursorWorld;
 		
 };
