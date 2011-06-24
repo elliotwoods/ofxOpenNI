@@ -37,6 +37,10 @@ public:
     ofVec3f getWorldXYZ(int i, int j);
     ofVec3f getWorldXYZ(ofVec2f xy);
 	
+	float	getWidth() { return width; }
+	float	getHeight() { return width; }
+	
+	
 private:
     
     void    updateData();
