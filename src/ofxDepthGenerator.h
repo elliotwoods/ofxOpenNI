@@ -4,6 +4,9 @@
 
 #define MAX_DEPTH 10000
 
+//slower but more accurate?
+#define ONI_DEPTH_USE_OPENNI_XYZ_METHOD
+
 typedef enum {
     ONI_DEPTH_PIXELMODE_YELLOW_NORMALISED = 0,
     ONI_DEPTH_PIXELMODE_YELLOW_RAW,
@@ -32,16 +35,20 @@ public:
     void setPreviewMode(ofxOpenNIDepthPixelMode mode);
     void setClearPreview(bool b);
     
-    //get position in meters of pixel (i,j)
-    void    getWorldXYZ(int i, int j, float* xyz);
-    ofVec3f getWorldXYZ(int i, int j);
-    ofVec3f getWorldXYZ(ofVec2f xy);
+    //get position in mm of pixel (x,y)
+	//x, y are pixel coords from top-left of image
+    ofVec3f getWorldXYZ(float const x, float const y) const;
+    ofVec3f getWorldXYZ(ofVec2f const xy) const; 
+	void	getWorldXYZ(vector<ofVec2f> const &xy, vector<ofVec3f> &xyz) const;
+	
+	void	getAllWorldXYZ(float* allWorldXYZ);
+	void	getAllWorldXYZ(vector<ofVec3f> &WorldXYZ);
 	
 	float	getWidth() { return width; }
 	float	getHeight() { return width; }
 	
 	
-private:
+protected:
     
     void    updateData();
 	void    updateTexture();
@@ -66,5 +73,8 @@ private:
     bool                    bUseTexture;
     ofxOpenNIDepthPixelMode previewMode;
     bool                    bClearPreview;
+	
+	//xyz calculation
+	void    getWorldXYZ(ofVec2f const * const xy, ofVec3f * xyz, const int count) const;
 };
 

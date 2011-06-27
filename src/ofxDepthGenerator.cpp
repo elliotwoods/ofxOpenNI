@@ -266,41 +266,129 @@ void ofxDepthGenerator::setClearPreview(bool b)
 }
 
 
-////////////////////
-// depth maths
+///////////////////////
+// world XYZ functions
+
+ofVec3f ofxDepthGenerator::getWorldXYZ(float const x, float const y) const
+{
+    ofVec3f xyz;
+	ofVec2f xy = ofVec2f(x, y);
+	
+    getWorldXYZ(&xy, &xyz, 1);
+	
+    return xyz;
+}
+
+ofVec3f ofxDepthGenerator::getWorldXYZ(ofVec2f const xy) const
+{
+    ofVec3f xyz;
+    getWorldXYZ(&xy, &xyz, 1);
+    return xyz;
+}
+
+void ofxDepthGenerator::getWorldXYZ(vector<ofVec2f> const &xy, vector<ofVec3f> &xyz) const
+{
+	getWorldXYZ(&xy[0], &xyz[0], xy.size());
+}
+
+#ifdef ONI_DEPTH_USE_OPENNI_XYZ_METHOD
+void ofxDepthGenerator::getWorldXYZ(ofVec2f const * const xy, ofVec3f * xyz, const int count) const
+{
+	XnPoint3D *projected = new XnPoint3D[count];
+	
+	for (int i=0; i<count; i++)
+	{
+		projected[i].X = xy[i].x;
+		projected[i].Y = xy[i].y;
+		projected[i].Z = float(depthPixels[int(xy[i].x  + xy[i].y * width)]) / 1000.0f;
+	}
+	
+	//here we presume XnFloat == float
+	//true so far for all platforms (win32, osx, linux)
+	//
+	XnPoint3D *world = (XnPoint3D*)xyz;
+	
+	//Ask OpenNI to do the legwork
+	depth_generator.ConvertProjectiveToRealWorld(count, projected, world);
+	
+	//invert y axis to match OpenCV
+	for (int i=0; i<count; i++)
+		xyz[i].y = -xyz[i].y;
+	
+	delete[] projected;
+	
+}
+
+#else
+
+///////////////////////////////////////
+// Alternative hand rolled version
 const float fx_d = 1.0f / 5.9421434211923247e+02f;
 const float fy_d = 1.0f / 5.9104053696870778e+02f;
 const float cx_d = 3.3930780975300314e+02f;
 const float cy_d = 2.4273913761751615e+02f;
 
-void ofxDepthGenerator::getWorldXYZ(int i, int j, float* xyz)
-{
-    // get the pixel  
-    float depth = depthPixels[i + j * width];
-    
-    if (depth < 0.1)
-    {
-        xyz[0] = 0;
-        xyz[1] = 0;
-        xyz[2] = 0;
-    } else {
-        xyz[2] = depth / 1000.0f;
-        xyz[0] = (float(i) - cx_d) * fx_d * xyz[2];
-        xyz[1] = -(float(j) - cy_d) * fy_d * xyz[2];
-    }
+
+void ofxDepthGenerator::getWorldXYZ(ofVec2f const * const xy, ofVec3f * xyz, const int count) const
+{	
+	ofVec3f* xyzMover = xyz;
+	ofVec2f const * xyMover = xy;
+	
+	for (int i=0; i<count; i++)
+	{
+		
+		xyzMover->z = depthPixels[int(xyMover->x  + xyMover->y * width)] / 1000.0f;
+		
+		if (xyzMover->z > 0.1)
+		{
+			xyzMover->x = (xyMover->x - cx_d) * fx_d * xyzMover->z;
+			xyzMover->y = (xyMover->y - cy_d) * fy_d * xyzMover->z;
+		} else {
+			xyzMover->x = 0;
+			xyzMover->y = 0;		
+		}
+		
+		xyzMover++;
+		xyMover++;
+	}
 }
 
-ofVec3f ofxDepthGenerator::getWorldXYZ(int i, int j)
+#endif
+void ofxDepthGenerator::getAllWorldXYZ(float* allWorldXYZ)
 {
-    ofVec3f xyz;
-    getWorldXYZ(i, j, &xyz.x);
-    return xyz;
+	int nPoints = width * height;
+	
+	ofVec2f *xy = new ofVec2f[nPoints];
+	
+	ofVec2f *xyMover = xy;
+	
+	for (int j=0; j<height; j++)
+		for (int i=0; i<width; i++)
+			*xyMover++ = ofVec2f(i, j);
+	
+	getWorldXYZ(xy, (ofVec3f*)allWorldXYZ, nPoints);
+	
+	delete[] xy;
 }
 
-ofVec3f ofxDepthGenerator::getWorldXYZ(ofVec2f xy)
+void ofxDepthGenerator::getAllWorldXYZ(vector<ofVec3f> &WorldXYZ)
 {
-    ofVec3f xyz;
-    getWorldXYZ(xy.x, xy.y, &xyz.x);
-    return xyz;
+	int nPoints = width * height;
+	
+	if (WorldXYZ.size() != nPoints)
+		WorldXYZ.resize(width * height);
+	
+	ofVec2f *xy = new ofVec2f[nPoints];
+	
+	ofVec2f *xyMover = xy;
+	
+	for (int j=0; j<height; j++)
+		for (int i=0; i<width; i++)
+			*xyMover++ = ofVec2f(i, j);
+	
+	getWorldXYZ(xy, &WorldXYZ[0], nPoints);
+	
+	delete[] xy;
 }
+
 
