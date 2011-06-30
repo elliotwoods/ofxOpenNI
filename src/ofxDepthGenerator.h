@@ -5,6 +5,7 @@
 #define MAX_DEPTH 10000
 
 //slower but more accurate?
+//also versatile if new devices emerge
 #define ONI_DEPTH_USE_OPENNI_XYZ_METHOD
 
 typedef enum {

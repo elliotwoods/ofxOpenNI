@@ -74,7 +74,7 @@ bool ofxDepthGenerator::setup(ofxOpenNIContext* pContext) {
     
     depthPixels = new XnDepthPixel[width * height];
 	depthPreview.allocate(width, height, GL_RGB);		
-	depthPreviewPixels = new unsigned char[width * height * 4];
+	depthPreviewPixels = new unsigned char[width * height * 3];
     
 	return true;
 	
